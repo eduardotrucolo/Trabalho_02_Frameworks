@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Novo Pedido</title>
+</head>
+<body>
+<h1>Novo Pedido</h1>
+
+<form th:action="@{/pedidos/salvar}" method="post" th:object="${pedido}">
+    <label>Cliente: <input type="text" th:field="*{cliente}"/></label><br/>
+
+    <label>Itens:</label><br/>
+    <div th:each="item : ${itens}">
+        <input type="checkbox" name="itensSelecionados" th:value="${item.id}" />
+        <span th:text="${item.nome + ' - R$' + item.preco}"></span><br/>
+    </div>
+
+    <button type="submit">Salvar</button>
+</form>
+</body>
+</html>

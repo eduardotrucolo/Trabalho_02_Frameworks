@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Pedidos</title>
+</head>
+<body>
+<h1>Pedidos</h1>
+
+<form th:action="@{/pedidos}" method="get">
+    Cliente: <input type="text" name="cliente" />
+    De: <input type="date" name="inicio" />
+    Até: <input type="date" name="fim" />
+    <button type="submit">Filtrar</button>
+</form>
+
+<a th:href="@{/pedidos/novo}">Novo Pedido</a>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Data</th>
+        <th>Valor Total</th>
+        <th>Ações</th>
+    </tr>
+    <tr th:each="pedido : ${pedidos.content}">
+        <td th:text="${pedido.id}"></td>
+        <td th:text="${pedido.cliente}"></td>
+        <td th:text="${pedido.data}"></td>
+        <td th:text="${pedido.valorTotal}"></td>
+        <td>
+            <a th:href="@{'/pedidos/excluir/' + ${pedido.id}}">Excluir</a>
+        </td>
+    </tr>
+</table>
+
+<div>
+    <span th:text="'Página: ' + ${paginaAtual + 1}"></span>
+    <a th:href="@{/pedidos(page=${paginaAtual - 1})}" th:if="${paginaAtual > 0}">Anterior</a>
+    <a th:href="@{/pedidos(page=${paginaAtual + 1})}" th:if="${pedidos.hasNext()}">Próxima</a>
+</div>
+</body>
+</html>
