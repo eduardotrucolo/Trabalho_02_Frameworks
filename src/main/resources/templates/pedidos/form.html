@@ -9,6 +9,7 @@
 <form th:action="@{/pedidos/salvar}" method="post" th:object="${pedido}">
     <label>Cliente: <input type="text" th:field="*{cliente}"/></label><br/>
 
+
     <label>Itens:</label><br/>
     <div th:each="item : ${itens}">
         <input type="checkbox" name="itensSelecionados" th:value="${item.id}" />
