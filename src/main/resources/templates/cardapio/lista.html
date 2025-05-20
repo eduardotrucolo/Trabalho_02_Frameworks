@@ -1,29 +1,44 @@
+<!-- templates/cardapio/lista.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Cardápio</title>
-</head>
-<body>
-<h1>Cardápio</h1>
-<a th:href="@{/cardapio/novo}">Novo Item</a>
-<table>
-    <tr>
-        <th>Nome</th>
-        <th>Descrição</th>
-        <th>Preço</th>
-        <th>Categoria</th>
-        <th>Ações</th>
-    </tr>
-    <tr th:each="item : ${itens}">
-        <td th:text="${item.nome}"></td>
-        <td th:text="${item.descricao}"></td>
-        <td th:text="${item.preco}"></td>
-        <td th:text="${item.categoria}"></td>
-        <td>
-            <a th:href="@{'/cardapio/editar/' + ${item.id}}">Editar</a>
-            <a th:href="@{'/cardapio/excluir/' + ${item.id}}">Excluir</a>
-        </td>
-    </tr>
-</table>
+<head th:replace="fragments/head :: head('Cardápio')"></head>
+<body class="d-flex flex-column min-vh-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<main class="container py-4">
+    <h1>Itens do Cardápio</h1>
+    <div class="mb-3 d-flex gap-2">
+        <a class="btn btn-success" th:href="@{/cardapio/novo}">Novo Item</a>
+        <a class="btn btn-primary" th:href="@{/cardapio/exportar-pdf}">Exportar PDF</a>
+        <a class="btn btn-secondary" th:href="@{/cardapio/buscar-por-preco}">Buscar por Preço</a>
+    </div>
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Preço</th>
+            <th>Categoria</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${itens}">
+            <td th:text="${item.nome}">Nome</td>
+            <td th:text="${item.descricao}">Descrição</td>
+            <td th:text="${item.preco}">0.00</td>
+            <td th:text="${item.categoria}">Categoria</td>
+            <td>
+                <a class="btn btn-sm btn-warning" th:href="@{'/cardapio/editar/' + ${item.id}}">Editar</a>
+                <a class="btn btn-sm btn-danger" th:href="@{'/cardapio/excluir/' + ${item.id}}"
+                   onclick="return confirm('Deseja excluir este item?')">Excluir</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+
+<div class="mt-auto" th:replace="fragments/footer :: footer"></div>
 </body>
 </html>
