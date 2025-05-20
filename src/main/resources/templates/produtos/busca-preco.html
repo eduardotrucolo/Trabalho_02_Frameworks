@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head('Buscar Produtos por Preço')}"></div>
+
+<body class="d-flex flex-column min-vh-100">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="flex-grow-1">
+  <div class="container py-4">
+    <h1>Buscar Produtos por Preço</h1>
+
+    <!-- Formulário de busca -->
+    <form class="row g-3 mb-4" method="get" th:action="@{/produtos/buscar-por-preco/resultados}">
+      <div class="col-md-5">
+        <label for="min" class="form-label">Preço Mínimo</label>
+        <input type="number" step="0.01" class="form-control" id="min" name="min" required>
+      </div>
+      <div class="col-md-5">
+        <label for="max" class="form-label">Preço Máximo</label>
+        <input type="number" step="0.01" class="form-control" id="max" name="max" required>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Buscar</button>
+      </div>
+    </form>
+
+    <!-- Resultados da busca -->
+    <div th:if="${produtos != null}">
+      <h2 th:if="${#lists.isEmpty(produtos)}">Nenhum produto encontrado.</h2>
+
+      <table th:if="${!#lists.isEmpty(produtos)}" class="table table-bordered">
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Preço</th>
+          <th>Categoria</th>
+          <th>Fornecedores</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="produto : ${produtos}">
+          <td th:text="${produto.id}"></td>
+          <td th:text="${produto.nome}"></td>
+          <td th:text="${produto.preco}"></td>
+          <td th:text="${produto.categoria != null ? produto.categoria.nome : 'Sem Categoria'}"></td>
+          <td>
+            <span th:if="${#lists.isEmpty(produto.fornecedores)}">Nenhum Fornecedor</span>
+            <span th:each="f, iter : ${produto.fornecedores}" th:text="${f.nome + (iter.last ? '' : ', ')}"></span>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</main>
+
+<div class="mt-auto" th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

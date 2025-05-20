@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="fragments/head :: head('Cadastrar Usuário')"></head>
+<body class="d-flex flex-column min-vh-100">
+
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<main class="container my-5">
+    <h2 class="mb-4 text-center">Cadastrar Novo Usuário</h2>
+
+    <form th:action="@{/usuarios/salvar}" th:object="${usuario}" method="post" class="w-50 mx-auto">
+        <div class="mb-3">
+            <label for="username" class="form-label">Usuário</label>
+            <input type="text" th:field="*{username}" class="form-control" id="username" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="senha" class="form-label">Senha</label>
+            <input type="password" th:field="*{senha}" class="form-control" id="senha" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="role" class="form-label">Tipo de Usuário</label>
+            <select th:field="*{role}" class="form-select" id="role" required>
+                <option value="USER">Comum</option>
+                <option value="ADMIN">Administrador</option>
+            </select>
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a th:href="@{/usuarios}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</main>
+
+<div class="mt-auto" th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

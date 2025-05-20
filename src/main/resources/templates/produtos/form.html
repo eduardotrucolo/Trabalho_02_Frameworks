@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:replace="fragments/head :: head('Produtos')"></div>
+
+<body class="d-flex flex-column min-vh-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<main class="flex-grow-1">
+    <div class="container py-4">
+        <h1 th:text="${produto.id != null} ? 'Editar Produto' : 'Novo Produto'"></h1>
+        <form th:action="@{/produtos/salvar}" th:object="${produto}" method="post">
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="mb-3">
+                <label for="nome" class="form-label">Nome</label>
+                <input type="text" th:field="*{nome}" class="form-control" id="nome" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="preco" class="form-label">Preço</label>
+                <input type="number" step="0.01" th:field="*{preco}" class="form-control" id="preco" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="categoria" class="form-label">Categoria</label>
+                <select th:field="*{categoria.id}" class="form-select" id="categoria" required>
+                    <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nome}" th:selected="${cat.id == produto.categoria?.id}">Categoria</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="fornecedores" class="form-label">Fornecedores</label>
+                <select multiple th:field="*{fornecedores}" class="form-select" id="fornecedores">
+                    <option th:each="f : ${fornecedores}" th:value="${f.id}" th:text="${f.nome}" th:selected="${produto.fornecedores.contains(f)}"></option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a th:href="@{/produtos}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</main>
+
+<div class="mt-auto" th:replace="fragments/footer :: footer"></div>
+</body>
+</html>
