@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Formulário Item</title>
+</head>
+<body>
+<h1>Item do Cardápio</h1>
+<form th:action="@{/cardapio/salvar}" th:object="${item}" method="post">
+    <input type="hidden" th:field="*{id}"/>
+    <label>Nome: <input type="text" th:field="*{nome}"/></label><br/>
+    <label>Descrição: <input type="text" th:field="*{descricao}"/></label><br/>
+    <label>Preço: <input type="number" step="0.01" th:field="*{preco}"/></label><br/>
+    <label>Categoria:
+        <select th:field="*{categoria}">
+            <option th:value="BEBIDA">Bebida</option>
+            <option th:value="LANCHE">Lanche</option>
+            <option th:value="SOBREMESA">Sobremesa</option>
+        </select>
+    </label><br/>
+    <button type="submit">Salvar</button>
+</form>
+</body>
+</html>
