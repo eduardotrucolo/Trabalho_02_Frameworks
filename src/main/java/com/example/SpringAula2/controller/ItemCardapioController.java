@@ -8,6 +8,10 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +27,10 @@ public class ItemCardapioController {
     private ItemCardapioService service;
 
     @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("itens", service.listarTodos());
+    public String listar(@RequestParam(defaultValue = "0") int page, Model model) {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("id").ascending());
+        Page<ItemCardapio> pagina = service.listarPaginado(pageable);
+        model.addAttribute("itens", pagina);
         return "cardapio/lista";
     }
 
