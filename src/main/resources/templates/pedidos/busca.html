@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Filtro de Pedidos')"></head>
+<body class="d-flex flex-column min-vh-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<main class="container py-4">
+    <h1>Filtrar Pedidos</h1>
+
+    <form class="row g-3 mb-4" th:action="@{/pedidos/filtro/resultados}" method="get">
+        <div class="col-md-4">
+            <label for="cliente" class="form-label">Cliente</label>
+            <input type="text" class="form-control" id="cliente" name="cliente">
+        </div>
+        <div class="col-md-3">
+            <label for="inicio" class="form-label">Data Inicial</label>
+            <input type="date" class="form-control" id="inicio" name="inicio" required>
+        </div>
+        <div class="col-md-3">
+            <label for="fim" class="form-label">Data Final</label>
+            <input type="date" class="form-control" id="fim" name="fim" required>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Buscar</button>
+        </div>
+    </form>
+
+    <div th:if="${pedidos != null}">
+        <h4 th:text=\"'Total de Vendas: R$ ' + ${total}\"></h4>
+
+        <table class="table table-bordered mt-3">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Data</th>
+                <th>Total</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="pedido : ${pedidos}">
+                <td th:text="${pedido.id}"></td>
+                <td th:text="${pedido.cliente}"></td>
+                <td th:text="${pedido.data}"></td>
+                <td th:text="${pedido.valorTotal}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <a th:href="@{/pedidos/exportar-pdf(inicio=${#request.getParameter('inicio')}, fim=${#request.getParameter('fim')})}" class="btn btn-danger mt-2">
+            Exportar PDF
+        </a>
+    </div>
+</main>
+<div class="mt-auto" th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

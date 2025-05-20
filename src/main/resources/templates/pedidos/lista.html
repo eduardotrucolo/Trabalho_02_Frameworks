@@ -1,43 +1,65 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Pedidos</title>
-</head>
-<body>
-<h1>Pedidos</h1>
+<head th:replace="fragments/head :: head('Pedidos')"></head>
+<body class="d-flex flex-column min-vh-100">
+<div th:replace="fragments/navbar :: navbar"></div>
 
-<form th:action="@{/pedidos}" method="get">
-    Cliente: <input type="text" name="cliente" />
-    De: <input type="date" name="inicio" />
-    Até: <input type="date" name="fim" />
-    <button type="submit">Filtrar</button>
-</form>
+<main class="container py-4">
+    <h1>Lista de Pedidos</h1>
+    <div class="d-flex gap-2 mb-3">
+        <a class="btn btn-success" href="/pedidos/novo">Novo Pedido</a>
+        <a class="btn btn-primary" href="/pedidos/filtro">Filtrar por Cliente/Data</a>
+    </div>
 
-<a th:href="@{/pedidos/novo}">Novo Pedido</a>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Data</th>
+            <th>Total</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="pedido : ${pedidos.content}">
+            <td th:text="${pedido.id}"></td>
+            <td th:text="${pedido.cliente}"></td>
+            <td th:text="${pedido.data}"></td>
+            <td th:text="${pedido.valorTotal}"></td>
+            <td>
+                <a class="btn btn-warning btn-sm" th:href="@{'/pedidos/editar/' + ${pedido.id}}">Editar</a>
+                <a class="btn btn-danger btn-sm" th:href="@{'/pedidos/excluir/' + ${pedido.id}}"
+                   onclick="return confirm('Deseja excluir este pedido?')">Excluir</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 
-<table>
-    <tr>
-        <th>ID</th>
-        <th>Cliente</th>
-        <th>Data</th>
-        <th>Valor Total</th>
-        <th>Ações</th>
-    </tr>
-    <tr th:each="pedido : ${pedidos.content}">
-        <td th:text="${pedido.id}"></td>
-        <td th:text="${pedido.cliente}"></td>
-        <td th:text="${pedido.data}"></td>
-        <td th:text="${pedido.valorTotal}"></td>
-        <td>
-            <a th:href="@{'/pedidos/excluir/' + ${pedido.id}}">Excluir</a>
-        </td>
-    </tr>
-</table>
-
-<div>
-    <span th:text="'Página: ' + ${paginaAtual + 1}"></span>
-    <a th:href="@{/pedidos(page=${paginaAtual - 1})}" th:if="${paginaAtual > 0}">Anterior</a>
-    <a th:href="@{/pedidos(page=${paginaAtual + 1})}" th:if="${pedidos.hasNext()}">Próxima</a>
-</div>
+    <!-- Paginação -->
+    <nav>
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${pedidos.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/pedidos(page=0)}">&laquo;&laquo;</a>
+            </li>
+            <li class="page-item" th:classappend="${pedidos.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/pedidos(page=${pedidos.number - 1})}">&laquo;</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(
+                    T(java.lang.Math).max(0, pedidos.number - 2),
+                    T(java.lang.Math).min(pedidos.totalPages - 1, pedidos.number + 2))}"
+                th:classappend="${i == pedidos.number} ? 'active'">
+                <a class="page-link" th:href="@{/pedidos(page=${i})}" th:text="${i + 1}"></a>
+            </li>
+            <li class="page-item" th:classappend="${pedidos.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/pedidos(page=${pedidos.number + 1})}">&raquo;</a>
+            </li>
+            <li class="page-item" th:classappend="${pedidos.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/pedidos(page=${pedidos.totalPages - 1})}">&raquo;&raquo;</a>
+            </li>
+        </ul>
+    </nav>
+</main>
+<div class="mt-auto" th:replace="fragments/footer :: footer"></div>
 </body>
 </html>

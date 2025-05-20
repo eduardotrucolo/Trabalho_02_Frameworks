@@ -1,22 +1,32 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Novo Pedido</title>
-</head>
-<body>
-<h1>Novo Pedido</h1>
+<head th:replace="fragments/head :: head('Novo Pedido')"></head>
+<body class="d-flex flex-column min-vh-100">
+<div th:replace="fragments/navbar :: navbar"></div>
 
-<form th:action="@{/pedidos/salvar}" method="post" th:object="${pedido}">
-    <label>Cliente: <input type="text" th:field="*{cliente}"/></label><br/>
+<main class="container py-4">
+    <h1 th:text="${pedido.id != null} ? 'Editar Pedido' : 'Novo Pedido'"></h1>
 
+    <form th:action="@{/pedidos/salvar}" th:object="${pedido}" method="post">
+        <input type="hidden" th:field="*{id}" />
+        <input type="hidden" th:field="*{data}" />
 
-    <label>Itens:</label><br/>
-    <div th:each="item : ${itens}">
-        <input type="checkbox" name="itensSelecionados" th:value="${item.id}" />
-        <span th:text="${item.nome + ' - R$' + item.preco}"></span><br/>
-    </div>
+        <div class="mb-3">
+            <label class="form-label" for="cliente">Cliente</label>
+            <input type="text" class="form-control" th:field="*{cliente}" id="cliente" required />
+        </div>
 
-    <button type="submit">Salvar</button>
-</form>
+        <div class="mb-3">
+            <label class="form-label" for="itens">Itens do Pedido</label>
+            <select multiple class="form-select" th:field="*{itens}" id="itens">
+                <option th:each="item : ${itens}" th:value="${item.id}" th:text="${item.nome}"></option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a th:href="@{/pedidos}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</main>
+<div class="mt-auto" th:replace="fragments/footer :: footer"></div>
 </body>
 </html>

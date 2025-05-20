@@ -20,12 +20,14 @@ public class Pedido {
 
     private LocalDate data;
 
-    private Double valorTotal;
-
     @ManyToMany
-    @JoinTable(name = "pedido_itens",
+    @JoinTable(
+            name = "pedido_itens",
             joinColumns = @JoinColumn(name = "pedido_id"),
-            inverseJoinColumns = @JoinColumn(name = "item_id"))
+            inverseJoinColumns = @JoinColumn(name = "item_id")
+    )
     private List<ItemCardapio> itens;
+
+    private Double valorTotal;
 }
 
