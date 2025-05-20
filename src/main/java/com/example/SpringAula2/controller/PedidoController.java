@@ -42,14 +42,14 @@ public class PedidoController {
 
         model.addAttribute("pedidos", pedidos);
         model.addAttribute("paginaAtual", page);
-        return "pedido/lista";
+        return "templates/pedidos/lista";
     }
 
     @GetMapping("/novo")
     public String novoPedido(Model model) {
-        model.addAttribute("pedido", new Pedido());
+        model.addAttribute("templates/pedidos", new Pedido());
         model.addAttribute("itens", itemRepo.findAll());
-        return "pedido/form";
+        return "templates/pedidos/form";
     }
 
     @PostMapping("/salvar")
