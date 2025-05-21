@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -74,16 +76,36 @@ public class PedidoController {
     }
 
     @GetMapping("/filtro/resultados")
-    public String buscar(@RequestParam String cliente,
-                         @RequestParam String inicio,
-                         @RequestParam String fim,
+    public String buscar(@RequestParam(required = false) String cliente,
+                         @RequestParam(required = false) String inicio,
+                         @RequestParam(required = false) String fim,
                          Model model) {
-        LocalDate dtInicio = LocalDate.parse(inicio);
-        LocalDate dtFim = LocalDate.parse(fim);
-        List<Pedido> pedidos = pedidoService.buscarPorClienteEData(cliente, dtInicio, dtFim);
-        double total = pedidos.stream().mapToDouble(Pedido::getValorTotal).sum();
-        model.addAttribute("pedidos", pedidos);
-        model.addAttribute("total", total);
+        try {
+            List<Pedido> pedidos;
+            double total = 0.0;
+
+            if ((cliente == null || cliente.isBlank()) && (inicio == null || fim == null)) {
+                model.addAttribute("erro", "Informe o nome do cliente ou intervalo de datas.");
+                return "pedidos/busca";
+            }
+
+            if (cliente != null && !cliente.isBlank()) {
+                pedidos = pedidoService.buscarPorCliente(cliente);
+            } else {
+                LocalDate dtInicio = LocalDate.parse(inicio);
+                LocalDate dtFim = LocalDate.parse(fim);
+                pedidos = pedidoService.buscarPorData(dtInicio, dtFim);
+            }
+
+            total = pedidos.stream().mapToDouble(Pedido::getValorTotal).sum();
+
+            model.addAttribute("pedidos", pedidos);
+            model.addAttribute("total", total);
+        } catch (DateTimeParseException e) {
+            model.addAttribute("erro", "Datas inválidas. Formato esperado: yyyy-MM-dd");
+        } catch (Exception e) {
+            model.addAttribute("erro", "Erro ao buscar pedidos: " + e.getMessage());
+        }
         return "pedidos/busca";
     }
 
@@ -93,7 +115,7 @@ public class PedidoController {
                             HttpServletResponse response) throws IOException, DocumentException {
         LocalDate dtInicio = LocalDate.parse(inicio);
         LocalDate dtFim = LocalDate.parse(fim);
-        List<Pedido> pedidos = pedidoService.buscarPorClienteEData("", dtInicio, dtFim);
+        List<Pedido> pedidos = pedidoService.buscarPorData(dtInicio, dtFim);
         double total = pedidos.stream().mapToDouble(Pedido::getValorTotal).sum();
 
         response.setContentType("application/pdf");

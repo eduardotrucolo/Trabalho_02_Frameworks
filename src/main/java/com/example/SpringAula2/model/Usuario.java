@@ -15,7 +15,7 @@ public class Usuario {
 
     private String username;
     private String senha;
-    private String role; // Ex: "ADMIN" ou "USER"
+    private String role; // Ex: "ADMIN" ou "ATENDENTE"
 
     public boolean isAdmin() {
         return "ADMIN".equalsIgnoreCase(role);

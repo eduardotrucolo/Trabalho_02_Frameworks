@@ -20,7 +20,7 @@ public class UsuarioService implements UserDetailsService {
     // Salvar novo usuário ou atualizar existente
     public void salvar(Usuario usuario) {
         // Verifica se é novo usuário ou se a senha foi alterada antes de recriptografar
-        if (usuario.getId() == null || !usuario.getSenha().startsWith("{bcrypt}")) {
+        if (usuario.getId() == null || !usuario.getSenha().startsWith("$2a$")) {
             usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         }
         usuarioRepository.save(usuario);

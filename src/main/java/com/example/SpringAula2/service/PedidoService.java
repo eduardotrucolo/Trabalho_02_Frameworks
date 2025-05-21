@@ -4,7 +4,8 @@ import com.example.SpringAula2.model.ItemCardapio;
 import com.example.SpringAula2.model.Pedido;
 import com.example.SpringAula2.repository.PedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -43,8 +44,12 @@ public class PedidoService {
         pedidoRepository.deleteById(id);
     }
 
-    public List<Pedido> buscarPorClienteEData(String cliente, LocalDate inicio, LocalDate fim) {
-        return pedidoRepository.buscarPorClienteEData(cliente, inicio, fim);
+    public List<Pedido> buscarPorCliente(String cliente) {
+        return pedidoRepository.findByClienteContainingIgnoreCase(cliente);
+    }
+
+    public List<Pedido> buscarPorData(LocalDate inicio, LocalDate fim) {
+        return pedidoRepository.findByDataBetween(inicio, fim);
     }
 }
 

@@ -10,6 +10,7 @@
     <h2 class="mb-4 text-center">Cadastrar Novo Usuário</h2>
 
     <form th:action="@{/usuarios/salvar}" th:object="${usuario}" method="post" class="w-50 mx-auto">
+        <input type="hidden" th:field="*{id}" />
         <div class="mb-3">
             <label for="username" class="form-label">Usuário</label>
             <input type="text" th:field="*{username}" class="form-control" id="username" required>
@@ -23,7 +24,7 @@
         <div class="mb-3">
             <label for="role" class="form-label">Tipo de Usuário</label>
             <select th:field="*{role}" class="form-select" id="role" required>
-                <option value="USER">Comum</option>
+                <option value="ATENDENTE">Atendente</option>
                 <option value="ADMIN">Administrador</option>
             </select>
         </div>

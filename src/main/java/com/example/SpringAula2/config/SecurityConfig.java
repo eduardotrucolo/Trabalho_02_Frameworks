@@ -28,7 +28,9 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers("/usuarios/**").hasRole("ADMIN") // gerenciamento de usuários apenas por ADMIN
+                        .requestMatchers("/cardapio/**").hasRole("ADMIN") // exemplo: gerenciamento de cardápio
+                        .requestMatchers("/pedidos/**").hasAnyRole("ADMIN", "ATENDENTE") // ambos podem ver/gerenciar pedidos
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -39,6 +41,7 @@ public class SecurityConfig {
                         .permitAll())
                 .exceptionHandling(ex -> ex
                         .accessDeniedPage("/403"));
+
         return http.build();
     }
     @Bean
