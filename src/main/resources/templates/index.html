@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+
 <div th:replace="fragments/head :: head('Início')"></div>
 <body class="d-flex flex-column min-vh-100">
 
@@ -12,7 +14,8 @@
         <h1 class="mb-4">SISTEMA DE PEDIDOS</h1>
         <div class="d-grid gap-3 col-6 mx-auto">
             <a href="/pedidos" class="btn btn-outline-dark btn-lg">GERENCIAR PEDIDOS</a>
-            <a href="/cardapio" class="btn btn-outline-secondary btn-lg">GERENCIAR ITENS DO CARDÁPIO (SOMENTE ADMIN)</a>
+            <a href="/cardapio" class="btn btn-outline-secondary btn-lg"
+               sec:authorize="hasRole('ADMIN')">GERENCIAR ITENS DO CARDÁPIO</a>
         </div>
     </div>
 </main>
