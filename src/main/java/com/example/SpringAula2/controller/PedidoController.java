@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter; // Importe esta classe
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +32,9 @@ public class PedidoController {
 
     @Autowired
     private ItemCardapioService itemCardapioService;
+
+    // Defina o formatter como uma constante para reuso
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @GetMapping
     public String listar(@RequestParam(defaultValue = "0") int page, Model model) {
@@ -84,17 +88,29 @@ public class PedidoController {
             List<Pedido> pedidos;
             double total = 0.0;
 
-            if ((cliente == null || cliente.isBlank()) && (inicio == null || fim == null)) {
-                model.addAttribute("erro", "Informe o nome do cliente ou intervalo de datas.");
+            model.addAttribute("clienteParam", cliente != null ? cliente : "");
+            model.addAttribute("inicioParam", inicio != null ? inicio : "");
+            model.addAttribute("fimParam", fim != null ? fim : "");
+
+            boolean filtroPorClienteAtivo = (cliente != null && !cliente.isBlank());
+            boolean filtroPorDataAtivo = (inicio != null && !inicio.isBlank() && fim != null && !fim.isBlank());
+
+            if (!filtroPorClienteAtivo && !filtroPorDataAtivo) {
+                model.addAttribute("erro", "Informe o nome do cliente ou um intervalo de datas válido.");
                 return "pedidos/busca";
             }
 
-            if (cliente != null && !cliente.isBlank()) {
+            if (filtroPorClienteAtivo) {
                 pedidos = pedidoService.buscarPorCliente(cliente);
-            } else {
-                LocalDate dtInicio = LocalDate.parse(inicio);
-                LocalDate dtFim = LocalDate.parse(fim);
+            } else if (filtroPorDataAtivo) {
+                // Aqui, LocalDate.parse(string, formatter) com "yyyy-MM-dd"
+                LocalDate dtInicio = LocalDate.parse(inicio, DATE_FORMATTER);
+                LocalDate dtFim = LocalDate.parse(fim, DATE_FORMATTER);
                 pedidos = pedidoService.buscarPorData(dtInicio, dtFim);
+            } else {
+                pedidos = Collections.emptyList();
+                model.addAttribute("erro", "Nenhum critério de filtro válido fornecido.");
+                return "pedidos/busca";
             }
 
             total = pedidos.stream().mapToDouble(Pedido::getValorTotal).sum();
@@ -102,52 +118,89 @@ public class PedidoController {
             model.addAttribute("pedidos", pedidos);
             model.addAttribute("total", total);
         } catch (DateTimeParseException e) {
-            model.addAttribute("erro", "Datas inválidas. Formato esperado: yyyy-MM-dd");
+            // Atualize a mensagem de erro para o formato esperado pelo input type="date"
+            model.addAttribute("erro", "Datas inválidas. Formato esperado: AAAA-MM-DD.");
+            model.addAttribute("clienteParam", cliente != null ? cliente : "");
+            model.addAttribute("inicioParam", inicio != null ? inicio : "");
+            model.addAttribute("fimParam", fim != null ? fim : "");
         } catch (Exception e) {
             model.addAttribute("erro", "Erro ao buscar pedidos: " + e.getMessage());
+            model.addAttribute("clienteParam", cliente != null ? cliente : "");
+            model.addAttribute("inicioParam", inicio != null ? inicio : "");
+            model.addAttribute("fimParam", fim != null ? fim : "");
         }
         return "pedidos/busca";
     }
 
+
     @GetMapping("/exportar-pdf")
-    public void exportarPdf(@RequestParam String inicio,
-                            @RequestParam String fim,
+    public void exportarPdf(@RequestParam(required = false) String cliente,
+                            @RequestParam(required = false) String inicio,
+                            @RequestParam(required = false) String fim,
                             HttpServletResponse response) throws IOException, DocumentException {
-        LocalDate dtInicio = LocalDate.parse(inicio);
-        LocalDate dtFim = LocalDate.parse(fim);
-        List<Pedido> pedidos = pedidoService.buscarPorData(dtInicio, dtFim);
-        double total = pedidos.stream().mapToDouble(Pedido::getValorTotal).sum();
+        List<Pedido> pedidos;
+        double total;
 
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=relatorio_pedidos.pdf");
+        try {
+            boolean filtroPorClienteAtivo = (cliente != null && !cliente.isBlank());
+            boolean filtroPorDataAtivo = (inicio != null && !inicio.isBlank() && fim != null && !fim.isBlank());
 
-        Document document = new Document();
-        PdfWriter.getInstance(document, response.getOutputStream());
-        document.open();
+            if (filtroPorClienteAtivo) {
+                pedidos = pedidoService.buscarPorCliente(cliente);
+            } else if (filtroPorDataAtivo) {
+                // Aqui, LocalDate.parse(string, formatter) com "yyyy-MM-dd"
+                LocalDate dtInicio = LocalDate.parse(inicio, DATE_FORMATTER);
+                LocalDate dtFim = LocalDate.parse(fim, DATE_FORMATTER);
+                pedidos = pedidoService.buscarPorData(dtInicio, dtFim);
+            } else {
+                pedidos = Collections.emptyList();
+            }
 
-        document.add(new Paragraph("Relatório de Pedidos"));
-        document.add(new Paragraph("De: " + inicio + " Até: " + fim));
-        document.add(new Paragraph(" "));
+            total = pedidos.stream().mapToDouble(Pedido::getValorTotal).sum();
 
-        PdfPTable tabela = new PdfPTable(4);
-        tabela.setWidthPercentage(100);
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=relatorio_pedidos.pdf");
 
-        tabela.addCell("ID");
-        tabela.addCell("Cliente");
-        tabela.addCell("Data");
-        tabela.addCell("Valor Total");
+            Document document = new Document();
+            PdfWriter.getInstance(document, response.getOutputStream());
+            document.open();
 
-        for (Pedido p : pedidos) {
-            tabela.addCell(p.getId().toString());
-            tabela.addCell(p.getCliente());
-            tabela.addCell(p.getData().toString());
-            tabela.addCell(String.format("%.2f", p.getValorTotal()));
+            document.add(new Paragraph("Relatório de Pedidos"));
+            if (filtroPorClienteAtivo) {
+                document.add(new Paragraph("Cliente: " + cliente));
+            } else if (filtroPorDataAtivo) {
+                document.add(new Paragraph("De: " + inicio + " Até: " + fim)); // Pode exibir YYYY-MM-DD ou formatar para exibição DD/MM/YYYY
+            } else {
+                document.add(new Paragraph("Filtro: Nenhum critério de filtro válido para o relatório."));
+            }
+            document.add(new Paragraph(" "));
+
+            PdfPTable tabela = new PdfPTable(4);
+            tabela.setWidthPercentage(100);
+
+            tabela.addCell("ID");
+            tabela.addCell("Cliente");
+            tabela.addCell("Data");
+            tabela.addCell("Valor Total");
+
+            for (Pedido p : pedidos) {
+                tabela.addCell(p.getId().toString());
+                tabela.addCell(p.getCliente());
+                // Formatar a data para exibição no PDF para o formato brasileiro
+                tabela.addCell(p.getData().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                tabela.addCell(String.format("R$ %.2f", p.getValorTotal()));
+            }
+
+            document.add(tabela);
+            document.add(new Paragraph(" "));
+            document.add(new Paragraph("Total Geral: R$ " + String.format("%.2f", total)));
+
+            document.close();
+
+        } catch (DateTimeParseException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Datas inválidas para exportação. Formato esperado: AAAA-MM-DD.");
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erro ao gerar PDF: " + e.getMessage());
         }
-
-        document.add(tabela);
-        document.add(new Paragraph(" "));
-        document.add(new Paragraph("Total Geral: R$ " + String.format("%.2f", total)));
-        document.close();
     }
 }
-

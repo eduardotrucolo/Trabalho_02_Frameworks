@@ -63,7 +63,11 @@
         </table>
 
         <a class="btn btn-danger mt-2"
-           th:href="@{/pedidos/exportar-pdf(inicio=${#request.getParameter('inicio')}, fim=${#request.getParameter('fim')})}">
+           th:if="${pedidos != null and !pedidos.isEmpty()}"
+           th:href="@{/pedidos/exportar-pdf(
+       cliente=${clienteParam},
+       inicio=${inicioParam},
+       fim=${fimParam})}">
             Exportar PDF
         </a>
     </div>
@@ -73,16 +77,20 @@
 
 <script>
     function trocarFiltro() {
-        const tipo = document.getElementById('tipoFiltro').value;
-        document.getElementById('filtroCliente').classList.add('d-none');
-        document.getElementById('filtroData').classList.add('d-none');
+        const tipo = document.getElementById("tipoFiltro").value;
+        const filtroCliente = document.getElementById("filtroCliente");
+        const filtroData = document.getElementById("filtroData");
 
-        if (tipo === 'cliente') {
-            document.getElementById('filtroCliente').classList.remove('d-none');
-        } else if (tipo === 'data') {
-            document.getElementById('filtroData').classList.remove('d-none');
+        filtroCliente.classList.add("d-none");
+        filtroData.classList.add("d-none");
+
+        if (tipo === "cliente") {
+            filtroCliente.classList.remove("d-none");
+        } else if (tipo === "data") {
+            filtroData.classList.remove("d-none");
         }
     }
+    document.addEventListener("DOMContentLoaded", trocarFiltro);
 </script>
 
 </body>
