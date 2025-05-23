@@ -12,24 +12,24 @@
             <label for="tipoFiltro" class="form-label">Tipo de Filtro</label>
             <select id="tipoFiltro" class="form-select" onchange="trocarFiltro()">
                 <option value="">Selecione</option>
-                <option value="cliente">Por Cliente</option>
-                <option value="data">Por Data</option>
+                <option value="cliente" th:selected="${clienteParam != null and clienteParam != ''}">Por Cliente</option>
+                <option value="data" th:selected="${inicioParam != null and inicioParam != ''}">Por Data</option>
             </select>
         </div>
 
-        <div id="filtroCliente" class="col-md-4 d-none">
+        <div id="filtroCliente" class="col-md-4" th:classappend="${clienteParam != null and clienteParam != '' ? '' : 'd-none'}">
             <label for="cliente" class="form-label">Cliente</label>
-            <input type="text" class="form-control" id="cliente" name="cliente">
+            <input type="text" class="form-control" id="cliente" name="cliente" th:value="${clienteParam}">
         </div>
 
-        <div id="filtroData" class="row d-none">
+        <div id="filtroData" class="row" th:classappend="${inicioParam != null and inicioParam != '' ? '' : 'd-none'}">
             <div class="col-md-3">
                 <label for="inicio" class="form-label">Data Inicial</label>
-                <input type="date" class="form-control" id="inicio" name="inicio">
+                <input type="date" class="form-control" id="inicio" name="inicio" th:value="${inicioParam}">
             </div>
             <div class="col-md-3">
                 <label for="fim" class="form-label">Data Final</label>
-                <input type="date" class="form-control" id="fim" name="fim">
+                <input type="date" class="form-control" id="fim" name="fim" th:value="${fimParam}">
             </div>
         </div>
 
@@ -41,7 +41,20 @@
     <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
 
     <div th:if="${pedidos != null}">
-        <h4 th:text="|Total de Vendas: R$ ${#numbers.formatDecimal(total, 1, 'COMMA', 2, 'POINT')}|"></h4>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 th:text="|Total de Vendas: R$ ${#numbers.formatDecimal(total, 1, 'COMMA', 2, 'POINT')}|" class="my-0"></h4>
+            <div class="d-flex gap-2">
+                <a class="btn btn-secondary" th:href="@{/pedidos}">Voltar à Lista Principal</a>
+                <a class="btn btn-danger"
+                   th:if="${pedidos != null and !pedidos.isEmpty()}"
+                   th:href="@{/pedidos/exportar-pdf(
+                       cliente=${clienteParam},
+                       inicio=${inicioParam},
+                       fim=${fimParam})}">
+                    Exportar PDF
+                </a>
+            </div>
+        </div>
 
         <table class="table table-bordered mt-3">
             <thead>
@@ -50,7 +63,7 @@
                 <th>Cliente</th>
                 <th>Data</th>
                 <th>Total</th>
-            </tr>
+                <th>Itens</th> <th>Ações</th> </tr>
             </thead>
             <tbody>
             <tr th:each="pedido : ${pedidos}">
@@ -58,18 +71,19 @@
                 <td th:text="${pedido.cliente}"></td>
                 <td th:text="${pedido.data}"></td>
                 <td th:text="${#numbers.formatDecimal(pedido.valorTotal, 1, 'COMMA', 2, 'POINT')}"></td>
+                <td>
+                    <span th:each="item, itemStat : ${pedido.itens}">
+                        <span th:text="${item.nome}"></span><span th:if="${!itemStat.last}">, </span>
+                    </span>
+                </td>
+                <td>
+                    <a class="btn btn-warning btn-sm" th:href="@{'/pedidos/editar/' + ${pedido.id}}">Editar</a>
+                    <a class="btn btn-danger btn-sm" th:href="@{'/pedidos/excluir/' + ${pedido.id}}"
+                       onclick="return confirm('Deseja excluir este pedido?')">Excluir</a>
+                </td>
             </tr>
             </tbody>
         </table>
-
-        <a class="btn btn-danger mt-2"
-           th:if="${pedidos != null and !pedidos.isEmpty()}"
-           th:href="@{/pedidos/exportar-pdf(
-       cliente=${clienteParam},
-       inicio=${inicioParam},
-       fim=${fimParam})}">
-            Exportar PDF
-        </a>
     </div>
 </main>
 
@@ -81,16 +95,38 @@
         const filtroCliente = document.getElementById("filtroCliente");
         const filtroData = document.getElementById("filtroData");
 
+        // Limpa os valores dos campos que serão escondidos para evitar submissão indesejada
+        const clienteInput = document.getElementById("cliente");
+        const inicioInput = document.getElementById("inicio");
+        const fimInput = document.getElementById("fim");
+
         filtroCliente.classList.add("d-none");
         filtroData.classList.add("d-none");
 
         if (tipo === "cliente") {
             filtroCliente.classList.remove("d-none");
+            inicioInput.value = ''; // Limpa campo de data
+            fimInput.value = '';    // Limpa campo de data
         } else if (tipo === "data") {
             filtroData.classList.remove("d-none");
+            clienteInput.value = ''; // Limpa campo de cliente
+        } else { // Se "Selecione" for escolhido, limpa tudo
+            clienteInput.value = '';
+            inicioInput.value = '';
+            fimInput.value = '';
         }
     }
-    document.addEventListener("DOMContentLoaded", trocarFiltro);
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Inicializa o filtro correto ao carregar a página se já houver parâmetros na URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('cliente') && urlParams.get('cliente') !== '') {
+            document.getElementById("tipoFiltro").value = "cliente";
+        } else if (urlParams.has('inicio') && urlParams.get('inicio') !== '') {
+            document.getElementById("tipoFiltro").value = "data";
+        }
+        trocarFiltro(); // Chama a função para exibir o filtro correto
+    });
 </script>
 
 </body>
