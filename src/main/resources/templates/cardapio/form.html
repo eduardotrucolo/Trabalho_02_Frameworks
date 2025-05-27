@@ -1,4 +1,3 @@
-<!-- templates/cardapio/form.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head('Formulário Cardápio')"></head>
@@ -34,8 +33,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Salvar</button>
-        <a class="btn btn-secondary" th:href="@{/cardapio}">Cancelar</a>
-    </form>
+        <a class="btn btn-secondary" th:href="@{/cardapio}">Voltar</a> </form>
 </main>
 
 <div class="mt-auto" th:replace="fragments/footer :: footer"></div>

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter; // Importe esta classe
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
@@ -33,12 +33,11 @@ public class PedidoController {
     @Autowired
     private ItemCardapioService itemCardapioService;
 
-    // Defina o formatter como uma constante para reuso
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @GetMapping
     public String listar(@RequestParam(defaultValue = "0") int page, Model model) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by("data").descending());
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("id").descending());
         Page<Pedido> pedidos = pedidoService.listarPaginado(pageable);
         model.addAttribute("pedidos", pedidos);
         return "pedidos/lista";
@@ -103,7 +102,6 @@ public class PedidoController {
             if (filtroPorClienteAtivo) {
                 pedidos = pedidoService.buscarPorCliente(cliente);
             } else if (filtroPorDataAtivo) {
-                // Aqui, LocalDate.parse(string, formatter) com "yyyy-MM-dd"
                 LocalDate dtInicio = LocalDate.parse(inicio, DATE_FORMATTER);
                 LocalDate dtFim = LocalDate.parse(fim, DATE_FORMATTER);
                 pedidos = pedidoService.buscarPorData(dtInicio, dtFim);
@@ -118,7 +116,6 @@ public class PedidoController {
             model.addAttribute("pedidos", pedidos);
             model.addAttribute("total", total);
         } catch (DateTimeParseException e) {
-            // Atualize a mensagem de erro para o formato esperado pelo input type="date"
             model.addAttribute("erro", "Datas inválidas. Formato esperado: AAAA-MM-DD.");
             model.addAttribute("clienteParam", cliente != null ? cliente : "");
             model.addAttribute("inicioParam", inicio != null ? inicio : "");
@@ -131,7 +128,6 @@ public class PedidoController {
         }
         return "pedidos/busca";
     }
-
 
     @GetMapping("/exportar-pdf")
     public void exportarPdf(@RequestParam(required = false) String cliente,
@@ -148,7 +144,6 @@ public class PedidoController {
             if (filtroPorClienteAtivo) {
                 pedidos = pedidoService.buscarPorCliente(cliente);
             } else if (filtroPorDataAtivo) {
-                // Aqui, LocalDate.parse(string, formatter) com "yyyy-MM-dd"
                 LocalDate dtInicio = LocalDate.parse(inicio, DATE_FORMATTER);
                 LocalDate dtFim = LocalDate.parse(fim, DATE_FORMATTER);
                 pedidos = pedidoService.buscarPorData(dtInicio, dtFim);
@@ -169,26 +164,38 @@ public class PedidoController {
             if (filtroPorClienteAtivo) {
                 document.add(new Paragraph("Cliente: " + cliente));
             } else if (filtroPorDataAtivo) {
-                document.add(new Paragraph("De: " + inicio + " Até: " + fim)); // Pode exibir YYYY-MM-DD ou formatar para exibição DD/MM/YYYY
+                document.add(new Paragraph("De: " + inicio + " Até: " + fim));
             } else {
                 document.add(new Paragraph("Filtro: Nenhum critério de filtro válido para o relatório."));
             }
             document.add(new Paragraph(" "));
 
-            PdfPTable tabela = new PdfPTable(4);
+            PdfPTable tabela = new PdfPTable(5);
             tabela.setWidthPercentage(100);
+            tabela.setSpacingBefore(10f);
+            tabela.setSpacingAfter(10f);
 
             tabela.addCell("ID");
             tabela.addCell("Cliente");
             tabela.addCell("Data");
             tabela.addCell("Valor Total");
+            tabela.addCell("Itens");
 
             for (Pedido p : pedidos) {
                 tabela.addCell(p.getId().toString());
                 tabela.addCell(p.getCliente());
-                // Formatar a data para exibição no PDF para o formato brasileiro
                 tabela.addCell(p.getData().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
                 tabela.addCell(String.format("R$ %.2f", p.getValorTotal()));
+
+                // Adicionar os itens do pedido no PDF
+                StringBuilder itensPdf = new StringBuilder();
+                for (int i = 0; i < p.getItens().size(); i++) {
+                    itensPdf.append(p.getItens().get(i).getNome());
+                    if (i < p.getItens().size() - 1) {
+                        itensPdf.append(", ");
+                    }
+                }
+                tabela.addCell(itensPdf.toString());
             }
 
             document.add(tabela);

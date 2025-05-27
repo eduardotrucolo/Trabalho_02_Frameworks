@@ -9,6 +9,7 @@
     <div class="d-flex gap-2 mb-3">
         <a class="btn btn-success" href="/pedidos/novo">Novo Pedido</a>
         <a class="btn btn-primary" href="/pedidos/filtro">Filtrar por Cliente/Data</a>
+        <a class="btn btn-secondary" href="/">Voltar ao Início</a>
     </div>
 
     <table class="table table-bordered">
@@ -18,7 +19,7 @@
             <th>Cliente</th>
             <th>Data</th>
             <th>Total</th>
-            <th>Ações</th>
+            <th>Itens</th> <th>Ações</th>
         </tr>
         </thead>
         <tbody>
@@ -26,7 +27,12 @@
             <td th:text="${pedido.id}"></td>
             <td th:text="${pedido.cliente}"></td>
             <td th:text="${pedido.data}"></td>
-            <td th:text="${pedido.valorTotal}"></td>
+            <td th:text="${#numbers.formatDecimal(pedido.valorTotal, 1, 'COMMA', 2, 'POINT')}"></td>
+            <td>
+                <span th:each="item, itemStat : ${pedido.itens}">
+                    <span th:text="${item.nome}"></span><span th:if="${!itemStat.last}">, </span>
+                </span>
+            </td>
             <td>
                 <a class="btn btn-warning btn-sm" th:href="@{'/pedidos/editar/' + ${pedido.id}}">Editar</a>
                 <a class="btn btn-danger btn-sm" th:href="@{'/pedidos/excluir/' + ${pedido.id}}"
@@ -36,7 +42,6 @@
         </tbody>
     </table>
 
-    <!-- Paginação -->
     <nav>
         <ul class="pagination justify-content-center">
             <li class="page-item" th:classappend="${pedidos.first} ? 'disabled'">

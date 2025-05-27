@@ -5,13 +5,15 @@
 <head th:replace="fragments/head :: head('Usuários')"></head>
 <body class="d-flex flex-column min-vh-100">
 
-<!-- Navbar -->
 <div th:replace="fragments/navbar :: navbar"></div>
 
 <main class="container mt-4 flex-grow-1">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Lista de Usuários</h2>
-        <a class="btn btn-primary" th:href="@{/usuarios/novo}">Novo Usuário</a>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary" th:href="@{/usuarios/novo}">Novo Usuário</a>
+            <a class="btn btn-secondary" th:href="@{/}">Voltar ao Início</a>
+        </div>
     </div>
 
     <table class="table table-hover table-bordered">
@@ -38,7 +40,6 @@
     </table>
 </main>
 
-<!-- Footer -->
 <div class="mt-auto" th:replace="fragments/footer :: footer"></div>
 
 </body>
